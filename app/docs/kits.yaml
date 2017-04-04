@@ -1,0 +1,205 @@
+---
+swagger: '2.0'
+
+################################################################################
+#                              API Information                                 #
+################################################################################
+info:
+  version: 1.0.0
+  title: Flask Sjeleton Service
+  description: |
+    **Template service implemtation for uBiome's microservices.**
+    
+    Find source code of this API [here](https://github.com/uBiome/uBiome-flask-skeleton)
+  contact:
+    name: uBiome
+    email: support@ubiome.com
+    url: ubiome.com
+    
+################################################################################
+#                  Host, Base Path, Schemes and Content Types                  #
+################################################################################
+# host: survey.ubiome.com
+basePath: /v1
+schemes:
+  - https
+produces:
+  - application/json
+consumes:
+  - application/json
+
+################################################################################
+#                                   Tags                                       #
+################################################################################
+tags:
+  - name: Kits
+    description: |
+      Kit operactiions
+
+################################################################################
+#                                  Security                                    #
+################################################################################
+
+securityDefinitions:
+  key:
+    type: apiKey
+    in: header
+    name: access_token
+security:
+  - key: []
+  
+################################################################################
+#                                   Parameters                                 #
+################################################################################
+parameters:
+  kitId:
+    name: kitId
+    in: path
+    description: The kit identifier number
+    type: number
+    required: true
+  pageNumber:
+    name: pageNumber
+    in: query
+    description: Page number
+    type: integer
+    default: 1
+    minimum: 1
+  pageSize:
+    name: pageSize
+    in: query
+    description: Page size
+    type: integer
+    default: 10
+    minimum: 1
+
+################################################################################
+#                                           Paths                              #
+################################################################################
+paths:
+  /kits:
+    get:
+      description: |
+        Get all kits
+      tags:
+        - Kits
+      parameters:
+        - $ref: '#/parameters/pageNumber'
+        - $ref: '#/parameters/pageSize'
+      responses:
+        "200":
+          description: Ok
+          schema:
+            properties:
+              items:
+                type: array
+                items:
+                  $ref: '#/definitions/Kit'
+              page:
+                $ref: '#/definitions/Page'
+        "400":
+          description: Error
+          schema:
+            $ref: '#/definitions/Error'
+
+    post:
+      description: |
+        Create a new Kit
+      tags:
+        - kits
+      parameters:
+        - name: kit
+          in: body
+          description: The Kit's JSON you want to post
+          schema:
+            $ref: '#/definitions/Kit'
+          required: true
+      responses:
+        201:
+          description: Ok
+          schema:
+            $ref: '#/definitions/Kit'
+
+  /kits/{kitId}:
+  
+    get:
+      description: |
+        Get specified kit
+      tags:
+        - Kits
+      parameters:
+        - $ref: '#/parameters/kitId'
+      responses:
+        "200":
+          description: Ok
+          schema:
+            $ref: '#/definitions/Kit'
+        "404":
+          description: Entity not found
+
+    put:
+      description: |
+        Update specified question
+      tags:
+        - Kits
+      parameters:
+        - $ref: '#/parameters/kitId'
+        - name: kit
+          in: body
+          description: The Kit's JSON you want to update
+          schema:
+            $ref: '#/definitions/Kit'
+          required: true
+      responses:
+        "200":
+          description: Ok
+          schema:
+            $ref: '#/definitions/Kit'
+        "400":
+          description: Validation Error
+          schema:
+            $ref: '#/definitions/Error'
+        "404":
+          description: Entity not found
+definitions:
+  Error:
+    type: object
+    properties:
+      code:
+        type: integer
+        format: int32
+      message:
+        type: string
+      fields:
+        type: string
+  Page:
+    type: object
+    properties:
+      pageNumber:
+        type: integer
+      pageSize:
+        type: integer
+  Kit:
+    description: Kit
+    type: object
+    properties:
+      kitType: 
+        $ref: '#/definitions/KitType'
+      barcode :
+        type : integer
+      registered: 
+        type : boolean
+      tubesReceived :
+        type : boolean
+        default: false
+    required:
+      - kitType
+      - barcode
+  KitType:
+    description: Type of each kit
+    type: object
+    properties:
+        name:
+          type: string
+        description:
+          type: string
