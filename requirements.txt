@@ -1,0 +1,15 @@
+flup
+urllib3
+iso8601
+requests
+flask
+flask-login
+flask-restful
+flask-sqlalchemy
+flask-marshmallow
+marshmallow-sqlalchemy
+coverage
+mock
+blinker
+pymysql
+PyJWT
