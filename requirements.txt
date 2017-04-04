@@ -13,3 +13,4 @@ mock
 blinker
 pymysql
 PyJWT
+psycopg2
