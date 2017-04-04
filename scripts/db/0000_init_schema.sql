@@ -3,9 +3,6 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 CREATE SCHEMA IF NOT EXISTS kits;
 
-DROP TABLE IF EXISTS kits.kits;
-DROP TABLE IF EXISTS kits.kit_types;
-
 CREATE TABLE kits.kit_types (
 	id UUID DEFAULT gen_random_uuid() NOT NULL,
 	name VARCHAR(128),

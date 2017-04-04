@@ -99,7 +99,9 @@ class SQLAlchemyDAO(object):
         else:
             if self.schema:
                 sql_filters, sql_order = self._create_sql_filter(filter)
-                items = self.mapped_class.query.filter(*sql_filters).order_by(*sql_order if sql_order else default_order).paginate(page, per_page)
+                # FIXME : There is an issue when we try to order by more than one creiteria
+                sql_order = sql_order if sql_order else default_order
+                items = self.mapped_class.query.filter(*sql_filters).order_by(sql_order).paginate(page, per_page)
                 return model.Pagination(page, per_page, items.total, items.items)
             else:
                 raise exception.ServiceException('This endpoint is not prepared for quering with filters')
@@ -165,7 +167,7 @@ class SQLAlchemyDAO(object):
 
         filter_order_list = [desc(self._get_class_field(sort)) if sort.order == 'desc' else asc(self._get_class_field(sort)) for sort in filter.sort if filter.sort]
 
-        return filter_sql,filter_order_list
+        return filter_sql, filter_order_list
 
     @contextmanager
     def session_scope(self, rollback=False):
