@@ -2,6 +2,7 @@ import flask
 import requests
 import json
 import collections
+import re
 
 from contextlib import contextmanager
 from sqlalchemy.orm import base as sqla_base
@@ -14,6 +15,9 @@ from . import exception
 
 
 class SQLAlchemyDAO(object):
+
+    __SNAKE_CASE_REGEX = re.compile('(?!^)([A-Z]+)')
+
     """
     Implement basic functionality for SQL DAOs as CRUD and transactions management.
     For transactions : http://docs.sqlalchemy.org/en/rel_0_8/orm/session.html#session-faq-whentocreate
@@ -98,16 +102,39 @@ class SQLAlchemyDAO(object):
             return model.Pagination(page, per_page, items.total, items.items)
         else:
             if self.schema:
-                sql_filters, sql_order = self._create_sql_filter(filter)
+                sql_joins, sql_filters, sql_order = self._create_sql_filter(filter)
                 # FIXME : There is an issue when we try to order by more than one creiteria
                 sql_order = sql_order if sql_order else default_order
-                items = self.mapped_class.query.filter(*sql_filters).order_by(sql_order).paginate(page, per_page)
+
+                query = self.mapped_class.query
+
+                for join in sql_joins:
+                    query = query.join(join)
+
+                items = query.filter(*sql_filters).order_by(sql_order).paginate(page, per_page)
                 return model.Pagination(page, per_page, items.total, items.items)
             else:
                 raise exception.ServiceException('This endpoint is not prepared for quering with filters')
 
     def get_entity_name(self):
         return self. mapped_class.__name__
+
+    def _get_join(self, query_field):
+        join = getattr(self.mapped_class, SQLAlchemyDAO.__SNAKE_CASE_REGEX.sub(r'_\1', query_field.split('.')[0]).lower())
+
+        if join is None:
+            raise exception.ValidationError('The field {} does not exist as query field'.format(query_field))
+
+        return join
+
+    def _get_relation_field(self, related, operand):
+
+        field = related.prop.mapper.columns._data.get(operand.var.split('.')[1])
+
+        if field is None:
+            raise exception.ValidationError('The field {} does not exist as query field'.format(operand.var))
+
+        return field
 
     def _get_class_field(self, operand):
             """
@@ -116,6 +143,7 @@ class SQLAlchemyDAO(object):
             :param operand:
             :return:
             """
+
             if self.schema.declared_fields.get(operand.var) is None:
                 raise exception.ValidationError('The field {} does not exist as query field'.format(operand.var))
 
@@ -154,20 +182,34 @@ class SQLAlchemyDAO(object):
         valid_logics = {"$and": "and_", "$or": "or_"}
 
         filter_sql = []
+        joins_sql = []
         for filter_logical in filter.filters:
             filter_logical_or = []
             for operand in filter_logical.operands:
                 operator = sql_operator_factory.get_operators(operand.op)
-                if filter_logical.op == "$or":
-                    filter_logical_or.append(getattr(self._get_class_field(operand), operator)(operand.value))
+                operation = None
+
+                if "." in operand.var:
+                    join = self._get_join(operand.var)
+
+                    if join not in joins_sql:
+                        joins_sql.append(join)
+
+                    operation = getattr(self._get_relation_field(join, operand), operator) (operand.value)
                 else:
-                    filter_sql.append(getattr(self._get_class_field(operand), operator)(operand.value))
+                    operation = getattr(self._get_class_field(operand), operator)(operand.value)
+
+                if filter_logical.op == "$or":
+                    filter_logical_or.append(operation)
+                else:
+                    filter_sql.append(operation)
+
             if len(filter_logical_or) > 0:
                 filter_sql.append(or_(*filter_logical_or))
 
         filter_order_list = [desc(self._get_class_field(sort)) if sort.order == 'desc' else asc(self._get_class_field(sort)) for sort in filter.sort if filter.sort]
 
-        return filter_sql, filter_order_list
+        return joins_sql, filter_sql, filter_order_list
 
     @contextmanager
     def session_scope(self, rollback=False):
