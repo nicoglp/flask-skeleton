@@ -120,7 +120,13 @@ class SQLAlchemyDAO(object):
         return self. mapped_class.__name__
 
     def _get_join(self, query_field):
-        join = getattr(self.mapped_class, SQLAlchemyDAO.__SNAKE_CASE_REGEX.sub(r'_\1', query_field.split('.')[0]).lower())
+
+        field_name = SQLAlchemyDAO.__SNAKE_CASE_REGEX.sub(r'_\1', query_field.split('.')[0]).lower()
+
+        if not hasattr(self.mapped_class, field_name):
+            raise exception.ValidationError('The field {} does not exist as query field'.format(query_field))
+
+        join = getattr(self.mapped_class, field_name)
 
         if join is None:
             raise exception.ValidationError('The field {} does not exist as query field'.format(query_field))
@@ -129,12 +135,26 @@ class SQLAlchemyDAO(object):
 
     def _get_relation_field(self, related, operand):
 
-        field = related.prop.mapper.columns._data.get(operand.var.split('.')[1])
+        fields = operand.var.split(".")[1:]
+        field = None
+        next_relation = related
+        joins = []
+
+        for f in fields:
+            field_name = SQLAlchemyDAO.__SNAKE_CASE_REGEX.sub(r'_\1', f).lower()
+            if not hasattr(next_relation.prop.mapper.class_, field_name):
+                raise exception.ValidationError('The field {} does not exist as query field'.format(operand.var))
+
+            field = getattr(next_relation.prop.mapper.class_, field_name)
+            next_relation = getattr(next_relation.prop.mapper.class_, field_name)
+            joins.append(next_relation)
 
         if field is None:
             raise exception.ValidationError('The field {} does not exist as query field'.format(operand.var))
 
-        return field
+        del joins[-1]
+
+        return field, joins
 
     def _get_class_field(self, operand):
             """
@@ -195,7 +215,13 @@ class SQLAlchemyDAO(object):
                     if join not in joins_sql:
                         joins_sql.append(join)
 
-                    operation = getattr(self._get_relation_field(join, operand), operator) (operand.value)
+                    field, joins = self._get_relation_field(join, operand)
+
+                    operation = getattr(field, operator) (operand.value)
+
+                    for join in joins:
+                        joins_sql.append(join)
+
                 else:
                     operation = getattr(self._get_class_field(operand), operator)(operand.value)
 
