@@ -13,6 +13,8 @@ from app.base.exception import ValidationError as FilterError
 
 import re
 
+__SNAKE_CASE_REGEX = re.compile('(?!^)([A-Z]+)')
+
 def __must_not_be_blank(field, data):
     if not data:
         raise ValidationError('Field {} must not be blank.'.format(field))
@@ -126,7 +128,7 @@ def parse_filter(find_param):
             if not isinstance(cond, list):
                 raise FilterError(errors={key:"Logical operators must be a list of conditions"})
 
-            filter = model.FilterLogical(key)
+            filter = model.FilterLogical(__SNAKE_CASE_REGEX.sub(r'_\1', key).lower())
             for c in cond:
                 # List must contains a list of dictionaries (conditions with operators)
                 filter.operands.append(parser_conditions(c))
@@ -135,7 +137,7 @@ def parse_filter(find_param):
 
         else:
             # Simple operator
-            default_ords.append(parser_conditions({key:cond}))
+            default_ords.append(parser_conditions({__SNAKE_CASE_REGEX.sub(r'_\1', key).lower():cond}))
 
     if len(default_ords) > 0:
         default_and = model.FilterLogical("$and")
@@ -164,10 +166,10 @@ def parser_conditions(dictionary):
         if operator not in ['$eq', '$not', '$gt', '$gte', '$lt', '$lte', '$not_in', '$in']:
             raise FilterError(errors={operator : "Operator is not supported"})
 
-        return model.FilterComparator(var, operator, op_value )
+        return model.FilterComparator(__SNAKE_CASE_REGEX.sub(r'_\1', var).lower(), operator, op_value )
     else:
         # 'value' is the equals value
-        return model.FilterComparator(var, "$eq", value)
+        return model.FilterComparator(__SNAKE_CASE_REGEX.sub(r'_\1', var).lower(), "$eq", value)
 
 
 def parse_order(sort_param):

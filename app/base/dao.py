@@ -16,8 +16,6 @@ from . import exception
 
 class SQLAlchemyDAO(object):
 
-    __SNAKE_CASE_REGEX = re.compile('(?!^)([A-Z]+)')
-
     """
     Implement basic functionality for SQL DAOs as CRUD and transactions management.
     For transactions : http://docs.sqlalchemy.org/en/rel_0_8/orm/session.html#session-faq-whentocreate
@@ -101,27 +99,24 @@ class SQLAlchemyDAO(object):
             items = self.mapped_class.query.order_by(default_order).paginate(page, per_page)
             return model.Pagination(page, per_page, items.total, items.items)
         else:
-            if self.schema:
-                sql_joins, sql_filters, sql_order = self._create_sql_filter(filter)
-                # FIXME : There is an issue when we try to order by more than one creiteria
-                sql_order = sql_order if sql_order else default_order
+            sql_joins, sql_filters, sql_order = self._create_sql_filter(filter)
+            # FIXME : There is an issue when we try to order by more than one creiteria
+            sql_order = sql_order if sql_order else default_order
 
-                query = self.mapped_class.query
+            query = self.mapped_class.query
 
-                for join in sql_joins:
-                    query = query.join(join)
+            for join in sql_joins:
+                query = query.join(join)
 
-                items = query.filter(*sql_filters).order_by(sql_order).paginate(page, per_page)
-                return model.Pagination(page, per_page, items.total, items.items)
-            else:
-                raise exception.ServiceException('This endpoint is not prepared for quering with filters')
+            items = query.filter(*sql_filters).order_by(sql_order).paginate(page, per_page)
+            return model.Pagination(page, per_page, items.total, items.items)
 
     def get_entity_name(self):
         return self. mapped_class.__name__
 
     def _get_join(self, query_field):
 
-        field_name = SQLAlchemyDAO.__SNAKE_CASE_REGEX.sub(r'_\1', query_field.split('.')[0]).lower()
+        field_name = query_field.split('.')[0]
 
         if not hasattr(self.mapped_class, field_name):
             raise exception.ValidationError('The field {} does not exist as query field'.format(query_field))
@@ -141,7 +136,7 @@ class SQLAlchemyDAO(object):
         joins = []
 
         for f in fields:
-            field_name = SQLAlchemyDAO.__SNAKE_CASE_REGEX.sub(r'_\1', f).lower()
+            field_name = f
             if not hasattr(next_relation.prop.mapper.class_, field_name):
                 raise exception.ValidationError('The field {} does not exist as query field'.format(operand.var))
 
@@ -164,14 +159,13 @@ class SQLAlchemyDAO(object):
             :return:
             """
 
-            if self.schema.declared_fields.get(operand.var) is None:
+            if not hasattr(self.mapped_class, operand.var):
                 raise exception.ValidationError('The field {} does not exist as query field'.format(operand.var))
 
-            field = self.schema.declared_fields.get(operand.var).attribute \
-                if self.schema.declared_fields.get(operand.var).attribute is not None \
-                else self.schema.declared_fields.get(operand.var).name
+            field = getattr(self.mapped_class, operand.var)
+
             if field:
-                return self.mapped_class.__dict__.get(field)
+                return field
             else:
                 raise exception.ValidationError('The field {} does not exist as queriable field'.format(operand.var))
 
