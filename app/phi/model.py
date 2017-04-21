@@ -10,4 +10,5 @@ class PHIModel(BaseDBModel):
 
     created_at = Column(types.DateTime)
     modified_at = Column(types.DateTime)
+    created_by = Column(types.String(256))
     modified_by = Column(types.String(256))
