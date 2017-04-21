@@ -9,7 +9,7 @@ api.add_resource(phi.PHIEntityResource,
                  resource_class_args=(dao.kit_dao, schema.kit_schema),
                  endpoint='Kit::Entity')
 
-api.add_resource(phi.PHICollectionResource,
+api.add_resource(base.CollectionResource,
                  '/kits',
                  resource_class_args=(dao.kit_dao, schema.kit_schema),
                  endpoint='Kit::Collection')

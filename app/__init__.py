@@ -68,3 +68,4 @@ def cores_headers(response):
 # Load resources
 from app.ping import resource
 from app.kits import resource
+from app.orders import resource

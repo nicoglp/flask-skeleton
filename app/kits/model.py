@@ -4,6 +4,7 @@ from sqlalchemy.types import *
 
 from app.base import model as base_model
 from app.phi import model as phi_model
+from app.orders import model as orders_model
 
 class KitType(base_model.BaseDBModel):
     __tablename__ = 'kit_types'
@@ -21,4 +22,5 @@ class Kit(phi_model.PHIModel):
     barcode = Column('barcode', String(32))
     registered = Column('registered', DateTime)
     delivery_status = Column('delivery_status', String(32))
+    order_id = Column('order_id', String(32), ForeignKey('orders.id'))
 

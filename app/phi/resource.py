@@ -16,7 +16,7 @@ class PHIEntityResource(resource.EntityResource):
     def get(self, id, **kwargs):
         return resource.EntityResource.get(self, id, **kwargs)
 
-    @require_auth
+#    @require_auth
     def post(self, id, **kwargs):
         return resource.EntityResource.post(self, id, **kwargs)
 

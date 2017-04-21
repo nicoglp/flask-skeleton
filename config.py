@@ -22,7 +22,7 @@ DEBUG = "True"
 SOCKET_UNIX = "/tmp/ubiome-orders-api_fcgi.sock"
 
 # SQL Storage configuration
-SQLALCHEMY_DATABASE_URI = "postgresql+psycopg2://postgres:postgres@localhost:5432/ubiome"
+SQLALCHEMY_DATABASE_URI = "postgresql+psycopg2://postgres:admin@localhost:5432/postgres"
 DATABASE_SCHEMA='kits'
 
 # Logger configuration
