@@ -12,11 +12,11 @@ class BRACTestCase(test.BaseTestCase):
     """
     @classmethod
     def setUpClass(cls):
-        db.create_all()
+        db.create_all(bind='brac')
 
     @classmethod
     def tearDownClass(self):
-        db.drop_all()
+        db.drop_all(bind='brac')
 
 
 @contextmanager

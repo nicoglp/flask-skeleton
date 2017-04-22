@@ -24,6 +24,8 @@ SOCKET_UNIX = "/tmp/ubiome-orders-api_fcgi.sock"
 # SQL Storage configuration
 SQLALCHEMY_DATABASE_URI = "postgresql+psycopg2://postgres:postgres@localhost:5432/ubiome"
 DATABASE_SCHEMA='kits'
+# SQL Test
+SQLALCHEMY_BINDS = {'brac':'postgresql+psycopg2://postgres:postgres@localhost:5432/'}
 
 # Logger configuration
 JSON_LOGGING_LOCATION = "/tmp/service_json.log"
