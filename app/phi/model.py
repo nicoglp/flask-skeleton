@@ -1,6 +1,7 @@
-from datetime import datetime
 from sqlalchemy import types, Column
+
 from app.base.model import BaseDBModel
+
 
 class PHIModel(BaseDBModel):
 

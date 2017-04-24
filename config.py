@@ -33,3 +33,6 @@ TEXT_LOGGING_LOCATION = "/tmp/service.log"
 LOGGING_LEVEL = "DEBUG"
 
 HEARTBEAT_FILE="/tmp/heartbeat.txt"
+
+# Cache
+CACHE_BACK_IMPL = "simple"
