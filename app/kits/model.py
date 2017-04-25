@@ -1,9 +1,10 @@
-from sqlalchemy import Column, ForeignKey, Table
+from sqlalchemy import Column, ForeignKey
 from sqlalchemy.orm import relationship
-from sqlalchemy.types import *
+from sqlalchemy.types import String, UnicodeText, DateTime
 
 from app.base import model as base_model
 from app.phi import model as phi_model
+
 
 class KitType(base_model.BaseDBModel):
     __tablename__ = 'kit_types'

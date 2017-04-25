@@ -1,9 +1,9 @@
 
-from test import brac
-from app import db
 from app.base.dao import session_scope
-from app.brac import model
 from app.brac import dao
+from app.brac import model
+from test import brac
+
 
 class TestUserDAOTestCase(brac.BRACTestCase):
 

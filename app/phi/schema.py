@@ -11,4 +11,5 @@ class PHISchema(schema.BaseSchema):
     userId = schema.UUID(attribute='owner_id', validate=schema.entity_exist('userId', user_dao), required=False, allow_none=True)
     createdAt = fields.DateTime(format='iso8601', attribute='created_at', dump_only=True)
     modifiedAt = fields.DateTime(format='iso8601', attribute='modified_at', dump_only=True)
+    createdBy = fields.Str(attribute='created_by', dump_only=True)
     modifiedBy = fields.Str(attribute='modified_by', dump_only=True)

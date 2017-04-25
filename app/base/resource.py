@@ -1,15 +1,14 @@
+import json
+
 import flask
 import flask_restful
-import json, collections
 from werkzeug import exceptions as http_exception
 
 from app import service
-from app.base.exception import ValidationError
 from app.brac import require_auth
-
+from . import exception
 from . import model
 from . import schema
-from . import exception
 
 
 class AbstractUBiomeResource(flask_restful.Resource):

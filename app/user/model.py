@@ -13,6 +13,8 @@ class User(base_model.BaseModel):
         self.roles = roles
 
     def add_role(self, role):
+        if not self.roles:
+            self.roles = []
         self.roles.append(role)
 
     def add_roles(self, roles):

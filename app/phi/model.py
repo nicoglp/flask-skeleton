@@ -1,6 +1,7 @@
-from datetime import datetime
 from sqlalchemy import types, Column
+
 from app.base.model import BaseDBModel
+
 
 class PHIModel(BaseDBModel):
 
@@ -10,4 +11,5 @@ class PHIModel(BaseDBModel):
 
     created_at = Column(types.DateTime)
     modified_at = Column(types.DateTime)
+    created_by = Column(types.String(256))
     modified_by = Column(types.String(256))

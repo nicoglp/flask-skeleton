@@ -1,26 +1,28 @@
 import flask, os
 from flask_restful import Api
 from flask import current_app
+from flask_cache import Cache
 import werkzeug.exceptions
 import json
 import flask_sqlalchemy
-
 from sqlalchemy.schema import MetaData
 
 from app.base import logger
 
 # App Configurations
+from app.base.cache_config import CacheConfig
+
 service = flask.Flask(__name__)
 service.config.from_object('config')
 config = service.config
 
+# Config Cache
+cache = Cache(service, config=CacheConfig.get_cache_config(service.config['CACHE_BACK_IMPL']))
 # API Configuration
 api = Api(service, prefix=service.config.get('API_PREFIX'))
-
 # DB Configurations
 metadata = MetaData(schema=service.config['DATABASE_SCHEMA'])
 db = flask_sqlalchemy.SQLAlchemy(service, session_options=dict(autocommit=False, autoflush=False), metadata=metadata)
-
 logger.config_logger(service)
 
 
@@ -68,3 +70,4 @@ def cores_headers(response):
 # Load resources
 from app.ping import resource
 from app.kits import resource
+from app.base import cache_resource

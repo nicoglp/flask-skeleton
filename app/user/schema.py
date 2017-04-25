@@ -1,9 +1,6 @@
-from app.base import schema as base_schema
-
 from marshmallow import Schema, fields, post_load
 
 from app.base import schema as base_schema
-
 from . import model
 
 

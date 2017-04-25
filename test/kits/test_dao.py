@@ -1,6 +1,6 @@
 import datetime
+import flask
 
-from test.base import BaseTestCase
 from test.brac import BRACTestCase, brac_scope
 
 from app.kits import model
@@ -30,7 +30,7 @@ class TestKitDAOTestCase(BRACTestCase):
 
             kit_saved = self.dao.create(kit)
             self.assertIsNotNone(kit_saved.id)
-
+            self.assertEqual(kit_saved.created_by, flask.g.user.id)
 
             # Retrieve
             kit_retieved = self.dao.retrieve(kit_saved.id)
@@ -45,29 +45,30 @@ class TestKitDAOTestCase(BRACTestCase):
             self.kit_dao.delete(kit_type)
 
 
-class TestKitTypeDAO(BaseTestCase):
+class TestKitTypeDAO(BRACTestCase):
 
     def setUp(self):
         super(TestKitTypeDAO, self).setUp()
         self.dao = dao.kit_type_dao
 
     def test_create(self):
+        with brac_scope({'Kit': 'CRUD'}):
 
-        kit_type = model.KitType(name = 'Test',
-                                 description='Kit Type for Unit Tests',
-                                 welcome_screen='<h1>Welcome</h1>',
-                                 finish_screen='<h1>By</h1>')
+            kit_type = model.KitType(name = 'Test',
+                                     description='Kit Type for Unit Tests',
+                                     welcome_screen='<h1>Welcome</h1>',
+                                     finish_screen='<h1>By</h1>')
 
-        kit_saved = self.dao.create(kit_type)
-        self.assertIsNotNone(kit_saved.id)
-
-
-        # Retrieve
-        kit_type_retieved = self.dao.retrieve(kit_saved.id)
-        self.assertIsNotNone(kit_type_retieved)
-        self.assertEqual(kit_type_retieved, kit_saved)
+            kit_saved = self.dao.create(kit_type)
+            self.assertIsNotNone(kit_saved.id)
 
 
-        # Delete
-        test_deleted = self.dao.delete(kit_type_retieved)
-        self.assertIsNotNone(test_deleted)
+            # Retrieve
+            kit_type_retieved = self.dao.retrieve(kit_saved.id)
+            self.assertIsNotNone(kit_type_retieved)
+            self.assertEqual(kit_type_retieved, kit_saved)
+
+
+            # Delete
+            test_deleted = self.dao.delete(kit_type_retieved)
+            self.assertIsNotNone(test_deleted)

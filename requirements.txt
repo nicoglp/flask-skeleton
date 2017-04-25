@@ -7,6 +7,7 @@ flask-login
 flask-restful
 flask-sqlalchemy
 flask-marshmallow
+flask-cache
 marshmallow-sqlalchemy
 coverage
 mock
@@ -14,3 +15,4 @@ blinker
 pymysql
 PyJWT
 psycopg2
+redis
