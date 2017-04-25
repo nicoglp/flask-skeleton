@@ -14,6 +14,7 @@ CREATE TABLE kits.kits (
 	id UUID DEFAULT gen_random_uuid() NOT NULL,
 	owner_id VARCHAR(36),
 	created_at TIMESTAMP WITHOUT TIME ZONE,
+	created_by VARCHAR(256),
 	modified_at TIMESTAMP WITHOUT TIME ZONE,
 	modified_by VARCHAR(256),
     kit_type_id UUID,

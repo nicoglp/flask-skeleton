@@ -3,7 +3,7 @@ from contextlib import contextmanager
 
 from test import base as test
 from app import db
-from app.brac import model
+from app.user import model
 
 class BRACTestCase(test.BaseTestCase):
     """
@@ -23,7 +23,7 @@ class BRACTestCase(test.BaseTestCase):
 def brac_scope(perms={}):
 
     """Provide a User for a BRAC scope"""
-    user = model.BRACUser(ubiome_id='test')
+    user = model.User(id='test')
     role_orders = model.Role(name="test")
     for entity, permissions in perms.iteritems():
         role_orders.add_permission(model.Permission(resource=entity, operations=permissions))
