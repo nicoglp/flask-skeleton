@@ -22,5 +22,4 @@ class Kit(phi_model.PHIModel):
     barcode = Column('barcode', String(32))
     registered = Column('registered', DateTime)
     delivery_status = Column('delivery_status', String(32))
-    order_id = Column('order_id', String(32), ForeignKey('orders.id'))
 

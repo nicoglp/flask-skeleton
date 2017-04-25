@@ -5,84 +5,68 @@ from app.base import exception
 from app.phi import resource as phi
 import schema, dao
 import requests
+import lib
+import model
+import json
+from app.brac import require_auth
 
+class OrderResource(phi.PHICollectionResource):
+    def __init__(self, dao, schema, validators=None):
+        base.CollectionResource.__init__(self, dao, schema, validators)
 
-
-class OrderResource(base.EntityResource):
-
-    def get(self, id, **kwargs):
-        """ Search order state in shipStation"""
+    @require_auth
+    def post(self, **kwargs):
+        """Create an order in ubiome an if it success creation, create an order in Ship Station"""
         self._audit_before()
 
-        entity = self.dao.retrieve(id)
-        if entity:
-            headers = {'Authorization': 'Basic MWE2ZGJlZDdjZDA1NGM2NGEyNWVmNDlkMzcwM2FkNzE6NGJhOTliM2NhNWYzNDEyYTljOWM2YTExMzEzODMxNGE=' }
-            https = "https://ssapi.shipstation.com/orders/{}".format(entity.foreign_order_id)
-            response = requests.get(https, headers=headers)
+        order_response = phi.PHICollectionResource.post(self)
+        order, errors = self.schema.loads(order_response.data)
 
-            print response.json()
-            return self._response(response.json(), 200)# esto debería mapearlo para obtener el estado
-        else:
-            raise exception.EntityNotFoundError(id)
+        response = lib.create_ship_station_order(order)
 
-    def post(self, id, **kwargs):
-        """Create an order in Ship Station"""
-        url = 'https://ssapi.shipstation.com/orders/createorder'
-        ship_order = {"orderNumber": "custom-id",
-                           "orderDate": "2017-04-16T08:46:27.0000000",
-                           "orderKey": "custom-id",
-                           "orderStatus": "awaiting_shipment",
-                           "billTo": {
-                               "name": "The President"
-                           },
-                           "shipTo": {
-                               "name": "The President",
-                               "company": "US Govt",
-                               "street1": "1600 Pennsylvania Ave",
-                               "street2": "Oval Office",
-                               "city": "Washington",
-                               "state": "DC",
-                               "postalCode": "20500",
-                               "country": "US",
-                               "phone": "555-555-5555",
-                               "residential": True
-                           },
-                           "items": [
-                               {
-                                   "lineItemKey": "test_item_key",
-                                   "sku": "a-kit-barcode",
-                                   "name": "Test item #2",
-                                   "imageUrl": None,
-                                   "weight": {
-                                       "value": 24,
-                                       "units": "ounces"
-                                   },
-                                   "quantity": 1,
-                                   "unitPrice": 99.99,
-                                   "taxAmount": 2.5,
-                                   "shippingAmount": 5,
-                                   "warehouseLocation": "Aisle 1, Bin 7",
-                                   "options": [
-                                       {
-                                           "name": "Size",
-                                           "value": "Large"
-                                       }
-                                   ],
-                                   "productId": 123456,
-                                   "fulfillmentSku": None,
-                                   "adjustment": False,
-                                   "upc": "32-65-98"
-                               }]
-                           }
-        response = requests.post(url=url, headers=self._get_headers(), json=ship_order)
-        foreign_order_id = response.json().get('orderId')
-#       si retorna un 200 entonces debería buscar el Order local y actualizar el foreign_order_id
+        with self.dao.session_scope():
+            order.change_state(response.json().get('order_status'))
+            self.dao.update(order)
 
+        print response.status_code
+
+        return self._response(response.json(), 200)
 
 api.add_resource(OrderResource,
-                 '/shipOrder/<string:id>',
-                 resource_class_args=(dao.order_dao, schema.order_schema),
-                 endpoint='ShipOrderState::Search')
+                     '/shipOrder',
+                     resource_class_args=(dao.order_dao, schema.order_schema),
+                     endpoint='ShipOrderState::Search')
+
+# class OrderResource(base.CollectionResource):
+#     def __init__(self, dao, schema, validators=None):
+#         base.CollectionResource.__init__(self, dao, schema, validators)
+#
+#     def post(self, **kwargs):
+#         """Create an order in ubiome an if it success creation, create an order in Ship Station"""
+#         response = self.post(**kwargs) # quiero llamar al post de la super
+#
+#         si retorna que se cre la orden, la recupero y genero la orden para enviar a shipStation
+#         order = self.dao.retrieve(id)
+#
+#         url = lib.get_ship_station_url()
+#         ship_order = lib.get_ship_station_order(order)
+#
+#         response = requests.post(url=url, headers=self._get_headers(), json=ship_order)
+#         delivery_id = response.json().get('orderId')
+#         state = response.json().get('orderStatus')
+#
+#         state_movement = model.StateMovement()
+#         # seteo todo lo de stateMovement
+#
+#         order.state_history.add(order.actual_state)
+#
+#         order.actual_state = state_movement
+#
+#         persisto la orden
+
+        #       si retorna un 200 entonces debera buscar el Order local y actualizar el foreign_order_id
+
+
 
 api.add_resource(phi.PHIEntityResource,
                  '/orders/<string:id>',
@@ -90,7 +74,7 @@ api.add_resource(phi.PHIEntityResource,
                  endpoint='Order::Entity')
 
 
-api.add_resource(base.CollectionResource,
+api.add_resource(phi.PHICollectionResource,
                  '/orders',
                  resource_class_args=(dao.order_dao, schema.order_schema),
                  endpoint='Order::Collection')

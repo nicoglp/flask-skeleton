@@ -5,19 +5,45 @@ from app.phi.schema import PHISchema
 from . import model
 
 
+class OrderStateSchema(schema.BaseSchema):
+
+    name = fields.String(required=True)
+    description = fields.String(required=False)
+
+    @post_load
+    def make_object(self, data):
+        return model.OrderState(**data)
+
+order_state_schema = OrderStateSchema()
+
+
+class StateMovementSchema(schema.BaseSchema):
+
+    comments = fields.String(required=False)
+
+    @post_load
+    def make_object(self, data):
+        return model.StateMovement(**data)
+
+states_history_schema = StateMovementSchema()
+
+
 class OrderSchema(PHISchema):
     """
     Generates fields based on the ``models.Order``
     which is a ``db.Model`` class from ``flask_sqlalchemy``.
     """
-    ownerId = fields.String(attribute="owner_id",required=True, allow_none=True)
-    # orderId = fields.String(attribute="order_id",required=True, allow_none=True)
-    actualState = fields.String(attribute="actual_state",required=True, allow_none=True)
-    foreignOrderId = fields.String(attribute="foreign_order_id",required=False, allow_none=True)
-    kits = fields.Raw()
+
+    deliveryId = fields.String(attribute="delivery_id",required=False, allow_none=True)
+    actualStateId = fields.Integer(attribute="actual_state_id", required=False, allow_none=True)
+    actualState = fields.Nested(OrderStateSchema, attribute="actual_state", required=False, allow_none=True)
+    statesHistory = fields.Nested(StateMovementSchema, atribute='states_history', many=True, required=False, allow_none=True)
+
 
     @post_load
     def make_object(self, data):
         return model.Order(**data)
 
 order_schema = OrderSchema()
+
+

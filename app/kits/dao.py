@@ -4,6 +4,7 @@ from app.phi import dao as phi
 import model
 import schema
 
+
 class KitDAO(phi.PHIDAO):
 
     def __init__(self):
