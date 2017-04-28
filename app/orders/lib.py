@@ -1,5 +1,6 @@
 import datetime as dt
 import requests
+import model
 
 def get_ship_station_url():
     return 'https://ssapi.shipstation.com/orders/createorder'
@@ -65,6 +66,6 @@ def create_ship_station_order(order):
     return response
 
 
-def get_ubiome_state_from_ship_station_state(ship_station_state):
+def get_state_from(ship_station_state):
     """case o if anidados que mapean los estados de shipStation a los de ubiome"""
-    pass
+    return model.DeliveredState()
