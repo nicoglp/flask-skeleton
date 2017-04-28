@@ -31,7 +31,7 @@ class OrderResource(phi.PHICollectionResource):
 
 
         with self.dao.session_scope():
-            order.change_state(response.json().get('order_status'))
+            order.change_state(response.json().get('orderStatus'))
             self.dao.update(order)
 
         print response.status_code

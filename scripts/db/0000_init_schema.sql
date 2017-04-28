@@ -88,5 +88,7 @@ CREATE TABLE kits.order_movements
 INSERT INTO kits.order_states(
 	id, name, description, type)
 	VALUES (1, 'Ready to ship', 'Order sent to shipStation', 'READY_TO_SHIP'),
-    		(2, 'On Cours', 'Delivery on course', 'ON_COURSE'),
-    		(3, 'Delivered', 'Delivery ended', 'DELIVERED');
+    		(2, 'On Course', 'Delivery on course', 'ON_COURSE'),
+    		(3, 'Delivered', 'Delivery ended', 'DELIVERED'),
+    		(4, 'On Hold', 'Order awaiting for something', 'ON_HOLD'),
+    		(5, 'Cancelled', 'Order cancelled', 'CANCELLED');

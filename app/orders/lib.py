@@ -66,6 +66,18 @@ def create_ship_station_order(order):
     return response
 
 
+# def get_state_from(ship_station_state):
+#     return model.DeliveredState()
+
+
 def get_state_from(ship_station_state):
     """case o if anidados que mapean los estados de shipStation a los de ubiome"""
-    return model.DeliveredState()
+    switcher = {
+        "awaiting_payment": model.OnHoldState(),
+        "awaiting_shipment": model.OnHoldState(),
+        "shipped": model.DeliveredState(),
+        "on_hold": model.ReadyToShipState(),
+        "cancelled": model.CancelledState
+    }
+    return switcher.get(ship_station_state, None)
+

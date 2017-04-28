@@ -48,6 +48,24 @@ class DeliveredState(OrderState):
         self.id = 3
 
 
+class OnHoldState(OrderState):
+    __mapper_args__ = {
+        'polymorphic_identity': 'ON_HOLD'
+    }
+
+    def __init__(self):
+        self.id = 4
+
+
+class CancelledState(OrderState):
+    __mapper_args__ = {
+        'polymorphic_identity': 'CANCELLED'
+    }
+
+    def __init__(self):
+        self.id = 5
+
+
 class StateMovement(phi_model.PHIModel):
     __tablename__ = 'order_movements'
 
