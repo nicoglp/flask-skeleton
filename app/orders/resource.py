@@ -15,16 +15,16 @@ class OrderResource(phi.PHICollectionResource):
     @require_auth
     def post(self, **kwargs):
         """Create an order in ubiome an if it success creation, create an order in Ship Station"""
-        self._audit_before()
+        # self._audit_before()
 
         order_response = phi.PHICollectionResource.post(self)
         order, errors = self.schema.loads(order_response.data)
 
         persistent_order = self.dao.retrieve(order.id)
 
-        # initial_state = model.ReadyToShipState()
-        # order.actual_state_id = initial_state.id
-        # order.actual_state = initial_state
+        initial_state = model.ReadyToShipState()
+        order.actual_state_id = initial_state.id
+        order.actual_state = initial_state
         order.delivery_id = 'prueba'
 
         response = lib.create_ship_station_order(order)

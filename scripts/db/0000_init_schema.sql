@@ -39,8 +39,8 @@ CREATE TABLE kits.orders
 (
     id uuid NOT NULL DEFAULT gen_random_uuid(),
     owner_id character varying(36) COLLATE pg_catalog."default",
-    created_at timestamp without time zone,
-    modified_at timestamp without time zone,
+    created_at timestamptz,
+    modified_at timestamptz,
     modified_by character varying(256) COLLATE pg_catalog."default",
     delivery_id character varying(256) COLLATE pg_catalog."default",
     actual_state_id integer,
@@ -52,8 +52,8 @@ CREATE TABLE kits.orders
 CREATE TABLE kits.order_movements (
 	id UUID DEFAULT gen_random_uuid() NOT NULL,
 	owner_id VARCHAR(36),
-	created_at TIMESTAMP WITHOUT TIME ZONE,
-	modified_at TIMESTAMP WITHOUT TIME ZONE,
+	created_at timestamptz,
+    modified_at timestamptz,
 	modified_by VARCHAR(256),
     state_id INTEGER,
 	order_id UUID,
@@ -68,8 +68,8 @@ CREATE TABLE kits.order_movements
 (
     id uuid NOT NULL DEFAULT gen_random_uuid(),
     owner_id character varying(36) COLLATE pg_catalog."default",
-    created_at timestamp without time zone,
-    modified_at timestamp without time zone,
+    created_at timestamptz,
+    modified_at timestamptz,
     modified_by character varying(256) COLLATE pg_catalog."default",
     comments character varying(256) COLLATE pg_catalog."default",
     state_id integer,
@@ -83,7 +83,7 @@ CREATE TABLE kits.order_movements
         REFERENCES kits.order_states (id) MATCH SIMPLE
         ON UPDATE NO ACTION
         ON DELETE NO ACTION
-)
+);
 
 INSERT INTO kits.order_states(
 	id, name, description, type)

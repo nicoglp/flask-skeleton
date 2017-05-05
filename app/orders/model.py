@@ -6,6 +6,8 @@ from sqlalchemy.types import *
 import lib
 from app.base import model as base_model
 from app.phi import model as phi_model
+import datetime
+import pytz
 
 
 class OrderState(base_model.BaseDBModel):
@@ -87,15 +89,15 @@ class Order(phi_model.PHIModel):
     states_history = relationship("StateMovement", uselist=True)
 
     def change_state(self, new_state):
-        # state_movement = StateMovement(self.actual_state)
-        # state_movement.order_id = self.id
-        # state_movement.order = self
+        state_movement = StateMovement(self.actual_state)
+        state_movement.order_id = self.id
+        state_movement.order = self
         # state_movement.modified_at = datetime.datetime.now(tz=pytz.utc)
-        #
-        # if not self.states_history:
-        #     self.states_history = []
-        #
-        # self.states_history.append(state_movement)
+
+        if not self.states_history:
+            self.states_history = []
+
+        self.states_history.append(state_movement)
 
         ubiome_state = lib.get_state_from(new_state)
         self.actual_state_id = ubiome_state.id
